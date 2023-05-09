@@ -10,7 +10,8 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome Test"
+        android:id="@+id/welcome"
+        android:text="welcome"
         android:layout_centerHorizontal="true"
         android:textSize="35sp"
         android:textColor="@color/white"
@@ -19,24 +20,31 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/name"
-        android:text="name"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:textSize="35sp"
+        android:id="@+id/playlists"
         android:textColor="@color/white"
+        android:text="Playlists"
+        android:textSize="30sp"
+        android:gravity="left"
+        android:layout_below="@id/welcome"
+        android:padding="10dp"
+        />
+    
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/playlistrecycler"
+        android:layout_below="@id/playlists"
         />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/email"
-        android:text="email"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_below="@id/name"
-        android:textSize="25sp"
+        android:id="@+id/playlists_empty"
+        android:text="No Playlists Found"
         android:textColor="@color/white"
+        android:textSize="30sp"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
         />
 
     <Button

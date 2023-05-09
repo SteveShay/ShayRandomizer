@@ -2,6 +2,7 @@ package com.example.shayrandomizer;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,16 +27,22 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.protocol.client.Subscription;
 import com.spotify.protocol.types.PlayerState;
 import com.spotify.protocol.types.Track;
-
+import com.spotify.sdk.android.auth.AuthorizationClient;
+import com.spotify.sdk.android.auth.AuthorizationRequest;
+import com.spotify.sdk.android.auth.AuthorizationResponse;
 
 
 public class LoggedInActivity extends AppCompatActivity {
 
     GoogleSignInOptions gso;
     GoogleSignInClient gsc;
-    TextView name, email;
+    TextView welcome;
     Button signoutBtn;
+    RecyclerView recyclerView;
+    TextView playlists_empty;
+
     private static final String CLIENT_ID = "f308e03cbc174502800b65915ebebcbe";
+    private static final int REQUEST_CODE = 69420;
     private static final String REDIRECT_URI = "http://localhost:3000";
     private SpotifyAppRemote mSpotifyAppRemote;
 
@@ -44,9 +51,10 @@ public class LoggedInActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_logged_in);
 
-        name = findViewById(R.id.name);
-        email = findViewById(R.id.email);
+        welcome = findViewById(R.id.welcome);
         signoutBtn = findViewById(R.id.soutBtn);
+        recyclerView = findViewById(R.id.playlistrecycler);
+        playlists_empty = findViewById(R.id.playlists_empty);
 
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         gsc = GoogleSignIn.getClient(this,gso);
@@ -54,9 +62,7 @@ public class LoggedInActivity extends AppCompatActivity {
         GoogleSignInAccount userAcct = GoogleSignIn.getLastSignedInAccount(this);
         if (userAcct != null){
             String userName = userAcct.getDisplayName();
-            String userEmail = userAcct.getEmail();
-            name.setText(userName);
-            email.setText(userEmail);
+            welcome.setText("Welcome " + userName);
         }
 
         signoutBtn.setOnClickListener(new View.OnClickListener() {
@@ -75,6 +81,13 @@ public class LoggedInActivity extends AppCompatActivity {
                 .setRedirectUri(REDIRECT_URI)
                 .showAuthView(true)
                 .build();
+
+        AuthorizationRequest.Builder builder = new AuthorizationRequest.Builder(CLIENT_ID, AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
+
+        builder.setScopes(new String[]{"streaming"});
+        AuthorizationRequest request = builder.build();
+
+        AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
 
         SpotifyAppRemote.connect(this, connectionParams, new Connector.ConnectionListener() {
             @Override
@@ -100,7 +113,8 @@ public class LoggedInActivity extends AppCompatActivity {
     }
 
     private void connected(){
-        mSpotifyAppRemote.getPlayerApi().play("spotify:playlist:2eH1vkRbss1OTm5bxqZvFi");
+        /*mSpotifyAppRemote.getPlayerApi().play("spotify:playlist:2eH1vkRbss1OTm5bxqZvFi");*/
+
 
         mSpotifyAppRemote.getPlayerApi().subscribeToPlayerState().setEventCallback(playerstate -> {
             final Track track = playerstate.track;
@@ -109,6 +123,28 @@ public class LoggedInActivity extends AppCompatActivity {
             }
         });
     }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+
+        // Check if result comes from the correct activity
+        if (requestCode == REQUEST_CODE) {
+            AuthorizationResponse response = AuthorizationClient.getResponse(resultCode, intent);
+
+            switch (response.getType()) {
+                case TOKEN:
+                    Toast.makeText(getApplicationContext(), "Token success", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), response.getAccessToken(), Toast.LENGTH_SHORT).show();
+                    break;
+                case ERROR:
+                    Toast.makeText(getApplicationContext(), "error", Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+
+            }
+        }
+    }
+
 
     void sOut() {
         gsc.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
